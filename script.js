@@ -46,17 +46,154 @@ function resetTournament() {
     }
 }
 
-// --- LÓGICA DO PÓDIO ---
+// --- LÓGICA DE FIM DE TORNEIO (PÓDIO E DESEMPATE) ---
+function getTiedTopPlayers() {
+    let tied = new Set();
+    
+    // Verifica apenas se os jogadores no Top 3 (ou empatados com eles) têm Pontos e Buchholz idênticos
+    for (let i = 0; i < 3; i++) {
+        if (players[i] && players[i+1]) {
+            if (players[i].points === players[i+1].points && getBuchholz(players[i]) === getBuchholz(players[i+1])) {
+                tied.add(players[i]);
+                tied.add(players[i+1]);
+            }
+        }
+    }
+    return Array.from(tied);
+}
+
 function checkPodiumStatus() {
     const podiumBtn = document.getElementById('podiumBtn');
-    // Mostra o botão se estivermos na ronda 5 e todos os jogos estiverem resolvidos
+    const tiebreakBtn = document.getElementById('tiebreakBtn');
+    
     const allResolved = activeMatches.length > 0 && activeMatches.every(m => m.resolved);
     
     if (currentRound >= 5 && allResolved) {
-        podiumBtn.style.display = 'block';
+        // Ordena os jogadores para ter a certeza da classificação atual
+        players.sort((a, b) => {
+            if (b.points !== a.points) return b.points - a.points;
+            const bucA = getBuchholz(a);
+            const bucB = getBuchholz(b);
+            if (bucB !== bucA) return bucB - bucA;
+            return b.games - a.games; 
+        });
+
+        const tiedPlayers = getTiedTopPlayers();
+
+        if (tiedPlayers.length > 0) {
+            // Existe um empate no topo, mostra o botão de desempate
+            podiumBtn.style.display = 'none';
+            tiebreakBtn.style.display = 'block';
+        } else {
+            // Tudo limpo, mostra o pódio
+            podiumBtn.style.display = 'block';
+            tiebreakBtn.style.display = 'none';
+        }
     } else {
         podiumBtn.style.display = 'none';
+        if (tiebreakBtn) tiebreakBtn.style.display = 'none';
     }
+}
+
+let tiebreakHistory = []; // Substitui o currentTiebreakPlayers para guardar o histórico completo
+
+function showTiebreak() {
+    const tiedPlayers = getTiedTopPlayers();
+    
+    // Se for a primeira vez a abrir o desempate, inicializa a primeira partida relâmpago[cite: 4]
+    if (tiebreakHistory.length === 0) {
+        if (tiedPlayers.length < 2) return;
+        tiebreakHistory.push({
+            white: tiedPlayers[0],
+            black: tiedPlayers[1],
+            resolved: false
+        });
+    }
+
+    renderTiebreakList();
+
+    document.getElementById('mainLayout').style.display = 'none';
+    document.getElementById('tiebreakView').style.display = 'flex';
+}
+
+function renderTiebreakList() {
+    const listContainer = document.getElementById('tiedPlayersList');
+    listContainer.style.display = "flex";
+    listContainer.style.flexDirection = "column";
+    listContainer.style.gap = "15px";
+    listContainer.innerHTML = '';
+
+    tiebreakHistory.forEach((match, index) => {
+        if (match.resolved) {
+            // Cartão de empate passado (Cinza)
+            listContainer.innerHTML += `
+                <div class="pairing-card draw" style="box-shadow: none; border-color: var(--border); opacity: 0.6; padding: 15px;">
+                    <div class="match-info" style="font-size: 1.2rem;">
+                        <div class="pairing-player"><span class="color-indicator color-white"></span> ${match.white.name}</div>
+                        <div class="vs">VS</div>
+                        <div class="pairing-player right">${match.black.name} <span class="color-indicator color-black"></span></div>
+                    </div>
+                    <div class="match-actions" style="margin-top: 10px;">
+                        <div class="status-text" style="font-size: 1rem;">Empate</div>
+                    </div>
+                </div>
+            `;
+        } else {
+            // Cartão da partida ativa (Destacado e Maior)
+            listContainer.innerHTML += `
+                <div class="pairing-card" style="box-shadow: 0 4px 15px rgba(204, 51, 51, 0.3); border-color: var(--danger); padding: 20px;">
+                    <div class="match-info" style="font-size: 1.4rem; margin-bottom: 15px;">
+                        <div class="pairing-player"><span class="color-indicator color-white" style="width: 16px; height: 16px;"></span> ${match.white.name}</div>
+                        <div class="vs">VS</div>
+                        <div class="pairing-player right">${match.black.name} <span class="color-indicator color-black" style="width: 16px; height: 16px;"></span></div>
+                    </div>
+                    <div class="match-actions" style="gap: 12px; padding-top: 15px;">
+                        <button class="result-btn" style="padding: 12px; font-size: 1.1rem;" onclick="resolveTiebreak(${index}, '1-0')" title="Brancas Ganham">1-0</button>
+                        <button class="result-btn" style="padding: 12px; font-size: 1.1rem;" onclick="resolveTiebreak(${index}, '0.5-0.5')" title="Novo Empate">½-½</button>
+                        <button class="result-btn" style="padding: 12px; font-size: 1.1rem;" onclick="resolveTiebreak(${index}, '0-1')" title="Pretas Ganham">0-1</button>
+                    </div>
+                </div>
+            `;
+        }
+    });
+}
+
+function resolveTiebreak(matchIndex, result) {
+    let match = tiebreakHistory[matchIndex];
+
+    // Se houver um novo empate
+    if (result === '0.5-0.5') {
+        match.resolved = true;
+        
+        // Adiciona uma nova partida ao histórico invertendo as cores
+        tiebreakHistory.push({
+            white: match.black,
+            black: match.white,
+            resolved: false
+        });
+        
+        renderTiebreakList();
+        
+        // Faz scroll automático para baixo para ver a nova partida
+        window.scrollTo(0, document.body.scrollHeight);
+        return;
+    }
+
+    // Se houver um vencedor, atribui o ponto decisivo
+    if (result === '1-0') {
+        updateStat(match.white.id, 'points', 1);
+    } else if (result === '0-1') {
+        updateStat(match.black.id, 'points', 1);
+    }
+
+    // Limpa a memória do desempate e volta ao Dashboard
+    tiebreakHistory = [];
+    document.getElementById('tiebreakView').style.display = 'none';
+    document.getElementById('mainLayout').style.display = 'flex';
+    
+    // Atualiza o pódio
+    checkPodiumStatus();
+    saveData();
 }
 
 function showPodium() {
