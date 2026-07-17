@@ -1,0 +1,220 @@
+:root {
+    --bg-color: #302e2b;
+    --panel-bg: #262421;
+    --row-alt: #2c2a27;
+    --text-main: #ffffff;
+    --text-muted: #bababa;
+    --accent: #81b64c;
+    --accent-hover: #a3d160;
+    --danger: #cc3333;
+    --danger-hover: #e63939;
+    --border: #403d39;
+    --white-piece: #f0d9b5;
+    --black-piece: #b58863;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    margin: 0;
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+}
+
+.layout-wrapper {
+    display: flex;
+    gap: 20px;
+    width: 100%;
+    max-width: 1250px;
+    align-items: flex-start;
+}
+
+.left-column {
+    flex: 1;
+    background-color: var(--panel-bg);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    overflow: hidden;
+    min-width: 340px;
+}
+
+.right-column {
+    flex: 2;
+}
+
+.round-controls {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+}
+
+.round-controls button {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+}
+
+.pairings-list {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.pairing-card {
+    background-color: var(--bg-color);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.match-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 500;
+}
+
+.match-actions {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    border-top: 1px dashed var(--border);
+    padding-top: 10px;
+}
+
+.result-btn {
+    background-color: #403d39;
+    padding: 6px 12px;
+    font-size: 0.9rem;
+    flex: 1;
+}
+
+.result-btn:hover { background-color: var(--accent); }
+
+.pairing-player {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 42%;
+}
+
+.pairing-player.right {
+    justify-content: flex-end;
+    text-align: right;
+}
+
+.color-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.color-white { background-color: var(--white-piece); border: 1px solid #fff; }
+.color-black { background-color: var(--black-piece); border: 1px solid #000; }
+.vs { color: var(--text-muted); font-size: 0.8rem; font-weight: bold; }
+
+.container {
+    width: 100%;
+    background-color: var(--panel-bg);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    overflow: hidden;
+}
+
+.header {
+    padding: 1.5rem;
+    background-color: rgba(0,0,0,0.2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header h1, .header h2 { margin: 0; font-size: 1.5rem; }
+
+.add-player-form { display: flex; gap: 10px; }
+
+input[type="text"] {
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+input[type="text"]:focus { border-color: var(--accent); }
+
+button {
+    background-color: var(--accent);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+button:hover { background-color: var(--accent-hover); }
+button:active { transform: scale(0.96); }
+
+.action-btn {
+    background-color: #403d39;
+    padding: 4px 8px;
+    font-size: 0.85rem;
+    margin: 0 2px;
+}
+.action-btn:hover { background-color: #524e49; }
+
+.btn-danger { background-color: var(--danger); }
+.btn-danger:hover { background-color: var(--danger-hover); }
+
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 1rem; text-align: left; border-bottom: 1px solid var(--border); }
+th { color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; }
+
+tr { transition: background-color 0.2s; }
+tr:nth-child(even) { background-color: var(--row-alt); }
+tr:hover { background-color: rgba(255,255,255,0.05); }
+
+.rank { font-weight: bold; color: var(--text-muted); width: 30px; }
+.points { font-weight: bold; color: var(--accent); font-size: 1.1rem; }
+.controls { display: flex; gap: 5px; align-items: center; }
+.name-container { display: flex; align-items: center; gap: 8px; font-weight: 500; }
+
+
+/* Estilos para partidas concluídas */
+.pairing-card.win-white {
+    background-color: rgba(240, 217, 181, 0.15); /* Fundo com a cor da peça branca */
+    border: 1px solid var(--white-piece);
+}
+
+.pairing-card.win-black {
+    background-color: rgba(181, 136, 99, 0.15); /* Fundo com a cor da peça preta */
+    border: 1px solid var(--black-piece);
+}
+
+.pairing-card.draw {
+    background-color: var(--panel-bg); /* Mantém o cinzento do painel */
+    opacity: 0.6;
+}
+
+.status-text {
+    font-weight: bold;
+    font-size: 0.9rem;
+    text-align: center;
+    width: 100%;
+}
+
+.win-white .status-text { color: var(--white-piece); }
+.win-black .status-text { color: var(--black-piece); }
+.draw .status-text { color: var(--text-muted); }

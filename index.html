@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Swiss Tournament Standings</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+
+    <div class="layout-wrapper">
+        <!-- Coluna Esquerda: Emparelhamentos -->
+        <div class="left-column">
+            <div class="header">
+                <h2>⚔️ Emparelhamentos</h2>
+            </div>
+            <div class="round-controls">
+                <button id="generateRoundBtn" onclick="generatePairings()">Gerar Próxima Ronda</button>
+                <p id="roundInfo" style="color: var(--text-muted); font-size: 0.9rem; margin-top: 10px;">Ronda: 0 / 5</p>
+            </div>
+            <div id="pairingsList" class="pairings-list">
+                <!-- Emparelhamentos gerados por JavaScript -->
+                <p style="text-align: center; color: var(--text-muted); margin-top: 20px;">Adiciona pelo menos 6 jogadores e gera a 1.ª ronda.</p>
+            </div>
+        </div>
+
+        <!-- Coluna Direita: Tabela de Classificação -->
+        <div class="right-column container">
+            <div class="header">
+                <h1>🏆 Live Standings</h1>
+                <form class="add-player-form" id="addForm">
+                    <input type="text" id="playerName" placeholder="Nome do Jogador" required autocomplete="off">
+                    <button type="submit">Adicionar</button>
+                </form>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Player</th>
+                        <th>Pts</th>
+                        <th>Buc</th>
+                        <th>Jogos</th>
+                        <th>Edit Pts</th>
+                        <th>Edit Jogos</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboardBody">
+                    <!-- Linhas injetadas via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
