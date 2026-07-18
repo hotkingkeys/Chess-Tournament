@@ -14,17 +14,21 @@
     <!-- Main Tournament View -->
     <div class="layout-wrapper" id="mainLayout">
         <div class="left-column">
+            <!-- Cabeçalho com o título, botão e ronda na mesma linha -->
             <div class="header">
-                <h2>⚔️ Emparelhamentos</h2>
+                <h2 style="font-size: 1.2rem;">⚔️ Emparelhamentos</h2>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span id="roundInfo" style="color: var(--text-muted); font-size: 0.85rem; font-weight: bold;">Ronda: 0 / 5</span>
+                    <button id="generateRoundBtn" onclick="generatePairings()" style="padding: 5px 10px; font-size: 0.8rem;">Gerar Ronda</button>
+                </div>
             </div>
-            <div class="round-controls">
-                <button id="generateRoundBtn" onclick="generatePairings()">Gerar Próxima Ronda</button>
-                <p id="roundInfo" style="color: var(--text-muted); font-size: 0.9rem; margin-top: 10px;">Ronda: 0 / 5</p>
 
-                <!-- Botões de Fim de Torneio -->
-                <button id="podiumBtn" onclick="showPodium()" style="display: none; background-color: #f1c40f; color: #000; margin-top: 15px;">🏆 Ver Pódio</button>
-                <button id="tiebreakBtn" onclick="showTiebreak()" style="display: none; background-color: var(--danger); color: #fff; margin-top: 15px;">⚠️ Resolver Desempate</button>
+            <!-- Contentor para os botões finais (ocultos por defeito) -->
+            <div id="endGameControls" style="padding: 0 1rem;">
+                <button id="podiumBtn" onclick="showPodium()" style="display: none; background-color: #f1c40f; color: #000; width: 100%; margin-top: 10px;">🏆 Ver Pódio</button>
+                <button id="tiebreakBtn" onclick="showTiebreak()" style="display: none; background-color: var(--danger); color: #fff; width: 100%; margin-top: 10px;">⚠️ Resolver Desempate</button>
             </div>
+
             <div id="pairingsList" class="pairings-list">
                 <p style="text-align: center; color: var(--text-muted); margin-top: 20px;">Adiciona pelo menos 6 jogadores e gera a 1.ª ronda.</p>
             </div>
@@ -33,29 +37,42 @@
         <div class="right-column container">
             <div class="header">
                 <h1>🏆 Live Standings</h1>
-                <form class="add-player-form" id="addForm">
-                    <input type="text" id="playerName" placeholder="Nome do Jogador" required autocomplete="off">
-                    <button type="submit">Adicionar</button>
-                </form>
+                
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <form class="add-player-form" id="addForm">
+                        <input type="text" id="playerName" placeholder="Nome do Jogador" required autocomplete="off">
+                        <button type="submit">Adicionar</button>
+                    </form>
+
+                    <button id="themeToggleBtn" class="edit-toggle-btn" onclick="toggleTheme()" style="background-color: #f1c40f; color: #000;">Light Mode</button>
+
+                    <button id="toggleEditBtn" class="edit-toggle-btn" onclick="toggleEditMode()">Edit</button>
+                </div>
             </div>
 
             <table>
                 <thead>
                     <tr>
-                        <th>#</th>
-                        <th>Player</th>
-                        <th>Pts</th>
-                        <th>Buc</th>
-                        <th>Jogos</th>
-                        <th>Edit Pts</th>
-                        <th>Edit Jogos</th>
-                        <th>Ações</th>
+                        <th style="width: 45px; text-align: center;">#</th>
+                        <th>Jogador</th>
+                        <th style="width: 50px; text-align: center;">1</th>
+                        <th style="width: 50px; text-align: center;">2</th>
+                        <th style="width: 50px; text-align: center;">3</th>
+                        <th style="width: 50px; text-align: center;">4</th>
+                        <th style="width: 50px; text-align: center;">5</th>
+                        <th style="width: 60px; text-align: center;">Pts</th>
+                        <th style="width: 60px; text-align: center;">Buc</th>
+                        <th class="edit-col">Edit Pts</th>
+                        <th class="edit-col">Edit Jogos</th>
+                        <th class="edit-col">Ações</th>
                     </tr>
                 </thead>
                 <tbody id="leaderboardBody">
-                    <!-- Linhas injetadas via JavaScript -->
+                    <!-- Injected via JavaScript -->
                 </tbody>
             </table>
+
+            <img src="LogoTermas.jpeg" alt="Termas de São Pedro do Sul" class="termas-logo">
         </div>
     </div>
 

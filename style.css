@@ -18,36 +18,37 @@ body {
     background-color: var(--bg-color);
     color: var(--text-main);
     margin: 0;
-    padding: 2rem;
+    padding: 20px 2rem 1rem 2rem;
     display: flex;
     justify-content: center;
+    height: 100vh;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 .layout-wrapper {
     display: flex;
-    gap: 20px;
+    gap: 50px;
     width: 100%;
-    max-width: 1250px;
-    align-items: flex-start;
+    max-width: 95%; 
+    align-items: stretch;
+    height: 100%; 
 }
 
 .left-column {
-    flex: 1;
+    flex: 0.85;
+    margin-top: 0;
     background-color: var(--panel-bg);
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     overflow: hidden;
     min-width: 340px;
+    display: flex;            
+    flex-direction: column;   
 }
 
 .right-column {
-    flex: 2;
-}
-
-.round-controls {
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid var(--border);
-    text-align: center;
+    flex: 1.5;
 }
 
 .round-controls button {
@@ -57,20 +58,26 @@ body {
 }
 
 .pairings-list {
-    padding: 1.5rem;
+    padding: 0.8rem; 
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px; 
+    flex: 1;
+    justify-content: space-evenly;
+    overflow-y: auto; 
 }
+
+.pairings-list::-webkit-scrollbar { width: 6px; }
+.pairings-list::-webkit-scrollbar-thumb { background-color: var(--border); border-radius: 4px; }
 
 .pairing-card {
     background-color: var(--bg-color);
     border: 1px solid var(--border);
     border-radius: 6px;
-    padding: 12px;
+    padding: 6px 10px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 4px;
 }
 
 .match-info {
@@ -78,20 +85,21 @@ body {
     justify-content: space-between;
     align-items: center;
     font-weight: 500;
+    font-size: 0.95rem;
 }
 
 .match-actions {
     display: flex;
     justify-content: center;
-    gap: 8px;
+    gap: 6px;
     border-top: 1px dashed var(--border);
-    padding-top: 10px;
+    padding-top: 6px;
 }
 
 .result-btn {
     background-color: #403d39;
-    padding: 6px 12px;
-    font-size: 0.9rem;
+    padding: 4px 8px;
+    font-size: 0.8rem;
     flex: 1;
 }
 
@@ -101,7 +109,10 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    width: 42%;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .pairing-player.right {
@@ -118,7 +129,14 @@ body {
 
 .color-white { background-color: var(--white-piece); border: 1px solid #fff; }
 .color-black { background-color: var(--black-piece); border: 1px solid #000; }
-.vs { color: var(--text-muted); font-size: 0.8rem; font-weight: bold; }
+
+.vs { 
+    color: var(--text-muted); 
+    font-size: 0.8rem; 
+    font-weight: bold; 
+    flex: 0 0 auto; 
+    padding: 0 10px;
+}
 
 .container {
     width: 100%;
@@ -126,6 +144,8 @@ body {
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     overflow: hidden;
+    position: relative;
+    padding-bottom: 70px; /* Creates an empty safe zone at the bottom for the logo */
 }
 
 .header {
@@ -169,62 +189,117 @@ button:active { transform: scale(0.96); }
 
 .action-btn {
     background-color: #403d39;
-    padding: 4px 8px;
-    font-size: 0.85rem;
+    padding: 3px 6px;
+    font-size: 0.75rem;
     margin: 0 2px;
+    border-radius: 4px;
+    cursor: pointer;
+    color: white;
+    border: none;
 }
+
 .action-btn:hover { background-color: #524e49; }
 
 .btn-danger { background-color: var(--danger); }
 .btn-danger:hover { background-color: var(--danger-hover); }
 
-table { width: 100%; border-collapse: collapse; }
-/* Reduz o espaço vertical (padding) para caberem mais linhas no projetor */
+.termas-logo {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    height: 60px;
+    border-radius: 6px;
+    z-index: 1000;
+    mix-blend-mode: screen;
+    opacity: 0.85;
+}
+
+/* --- CLEAN LEADERBOARD TABLE STYLES --- */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    display: table;
+}
+
+thead {
+    display: table-header-group;
+}
+
+#leaderboardBody {
+    display: table-row-group; 
+}
+
+#leaderboardBody tr {
+    display: table-row;
+    transition: background-color 0.2s;
+}
+
+#leaderboardBody tr:nth-child(even) { 
+    background-color: var(--row-alt); 
+}
+
+#leaderboardBody tr:hover { 
+    background-color: rgba(255,255,255,0.05); 
+}
+
+#leaderboardBody td:nth-child(2) {
+    max-width: 220px; /* Adjust this number if you need more or less space */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 th, td { 
-    padding: 0.4rem 1rem; /* Era 1rem. Ao passar a 0.4rem, a tabela encolhe na vertical */
+    padding: 0.8rem 1rem;
     text-align: left; 
     border-bottom: 1px solid var(--border); 
+    display: table-cell; 
+    vertical-align: middle;
 }
-th { color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; }
 
-tr { transition: background-color 0.2s; }
-tr:nth-child(even) { background-color: var(--row-alt); }
-tr:hover { background-color: rgba(255,255,255,0.05); }
+th {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Round tracking cell states */
+.cell-center { text-align: center; }
+.res-win { color: #81b64c; font-weight: bold; }
+.res-loss { color: var(--danger); font-weight: bold; }
+.res-draw { color: var(--text-muted); font-weight: bold; }
+.res-pending { color: #666; font-style: italic; font-size: 0.85rem; }
 
 .rank { 
     font-weight: bold; 
     color: var(--text-muted); 
     width: 30px; 
-    font-size: 1.2rem; /* Posição maior */
+    font-size: 1.4rem; 
 }
+
 .points { 
     font-weight: bold; 
     color: var(--accent); 
-    font-size: 1.4rem; /* Números dos pontos maiores */
-}
-.controls { display: flex; gap: 5px; align-items: center; }
-.name-container { 
-    display: flex; 
-    align-items: center; 
-    gap: 8px; 
-    font-weight: 500; 
-    font-size: 1.2rem; /* Letras do nome maiores */
+    font-size: 1.6rem; 
 }
 
+.controls { display: flex; gap: 5px; align-items: center; justify-content: center; }
 
 /* Estilos para partidas concluídas */
 .pairing-card.win-white {
-    background-color: rgba(240, 217, 181, 0.15); /* Fundo com a cor da peça branca */
+    background-color: rgba(240, 217, 181, 0.15);
     border: 1px solid var(--white-piece);
 }
 
 .pairing-card.win-black {
-    background-color: rgba(181, 136, 99, 0.15); /* Fundo com a cor da peça preta */
+    background-color: rgba(181, 136, 99, 0.15);
     border: 1px solid var(--black-piece);
 }
 
 .pairing-card.draw {
-    background-color: var(--panel-bg); /* Mantém o cinzento do painel */
+    background-color: var(--panel-bg);
     opacity: 0.6;
 }
 
@@ -288,32 +363,12 @@ tr:hover { background-color: rgba(255,255,255,0.05); }
     text-align: center;
 }
 
-.place-number {
-    font-size: 3rem;
-    font-weight: 900;
-    line-height: 1;
-}
+.place-number { font-size: 3rem; font-weight: 900; line-height: 1; }
+.prize { font-size: 0.9rem; font-weight: 600; margin-top: 10px; padding: 0 10px; opacity: 0.85; }
 
-.prize {
-    font-size: 0.9rem;
-    font-weight: 600;
-    margin-top: 10px;
-    padding: 0 10px;
-    opacity: 0.85;
-}
-
-.step-1 { 
-    height: 250px; 
-    background: linear-gradient(to bottom, #f1c40f, #f39c12); 
-}
-.step-2 { 
-    height: 180px; 
-    background: linear-gradient(to bottom, #bdc3c7, #95a5a6); 
-}
-.step-3 { 
-    height: 120px; 
-    background: linear-gradient(to bottom, #cd7f32, #a0522d); 
-}
+.step-1 { height: 250px; background: linear-gradient(to bottom, #f1c40f, #f39c12); }
+.step-2 { height: 180px; background: linear-gradient(to bottom, #bdc3c7, #95a5a6); }
+.step-3 { height: 120px; background: linear-gradient(to bottom, #cd7f32, #a0522d); }
 
 /* Botão de Reset Top Right */
 .reset-top-right {
@@ -342,4 +397,81 @@ tr:hover { background-color: rgba(255,255,255,0.05); }
     font-size: 1.5rem;
     color: var(--text-muted);
     font-weight: bold;
+}
+
+/* --- SISTEMA DE MODO DE EDIÇÃO --- */
+.edit-col { display: none; }
+body.edit-mode-active .edit-col { display: table-cell; }
+body:not(.edit-mode-active) .add-player-form { display: none; }
+
+.edit-toggle-btn {
+    background-color: #3498db; 
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.8rem;
+    transition: background-color 0.2s;
+}
+
+body.edit-mode-active .edit-toggle-btn {
+    background-color: var(--danger); 
+}
+
+/* Hide administrative buttons by default for the audience */
+#resetBtn, #toggleEditBtn {
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+body:hover #resetBtn, body:hover #toggleEditBtn {
+    opacity: 1;
+}
+
+/* Title page indicator format string */
+.page-indicator {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    font-weight: normal;
+    margin-left: 12px;
+}
+
+/* --- LIGHT MODE FALLBACK --- */
+body.light-mode {
+    --bg-color: #f4f6f8;
+    --panel-bg: #ffffff;
+    --row-alt: #f8f9fa;
+    --text-main: #2c3e50;
+    --text-muted: #7f8c8d;
+    --border: #dcdde1;
+}
+
+/* Ensure the Termas logo blends with a white background instead of a dark one */
+body.light-mode .termas-logo {
+    mix-blend-mode: multiply; 
+    opacity: 1;
+}
+
+/* Reveal the toggle button ONLY when Edit Mode is active */
+body.edit-mode-active #themeToggleBtn {
+    display: block;
+}
+
+#themeToggleBtn {
+    display: none;
+}
+
+body.edit-mode-active #leaderboardBody td:nth-child(3),
+body.edit-mode-active #leaderboardBody td:nth-child(4),
+body.edit-mode-active #leaderboardBody td:nth-child(5),
+body.edit-mode-active #leaderboardBody td:nth-child(6),
+body.edit-mode-active #leaderboardBody td:nth-child(7),
+body.edit-mode-active th:nth-child(3),
+body.edit-mode-active th:nth-child(4),
+body.edit-mode-active th:nth-child(5),
+body.edit-mode-active th:nth-child(6),
+body.edit-mode-active th:nth-child(7) {
+    display: none !important;
 }

@@ -3,13 +3,18 @@ let nextId = 1;
 let currentRound = 0;
 let activeMatches = []; 
 
+// Pagination and Rotation States
+let currentPage = 0;
+const playersPerPage = 10;
+// Timer changed to 60000 ms (1 minute) for testing purposes
+let rotationInterval = setInterval(nextPage, 60000); 
+
 const addForm = document.getElementById('addForm');
 const playerNameInput = document.getElementById('playerName');
 const leaderboardBody = document.getElementById('leaderboardBody');
 const pairingsList = document.getElementById('pairingsList');
 const roundInfo = document.getElementById('roundInfo');
 
-// --- SISTEMA DE AUTO-SAVE ---
 function saveData() {
     const tournamentData = {
         players: players,
@@ -19,6 +24,7 @@ function saveData() {
     };
     localStorage.setItem('chessTournamentData', JSON.stringify(tournamentData));
     checkPodiumStatus();
+    resetRotationTimer(); 
 }
 
 function loadData() {
@@ -30,8 +36,20 @@ function loadData() {
         currentRound = data.currentRound || 0;
         activeMatches = data.activeMatches || [];
         
+        players.forEach(p => {
+            if (!p.roundHistory) p.roundHistory = [];
+        });
+
         if (currentRound > 0) {
             roundInfo.innerText = `Ronda: ${currentRound} / 5`;
+        }
+
+        // Add this inside loadData()
+        const savedTheme = localStorage.getItem('chessTournamentTheme');
+        if (savedTheme === 'light') {
+            document.body.classList.add('light-mode');
+            const btn = document.getElementById('themeToggleBtn');
+            if (btn) btn.innerText = '🌙 Dark Mode';
         }
         
         renderLeaderboard();
@@ -46,11 +64,20 @@ function resetTournament() {
     }
 }
 
-// --- LÓGICA DE FIM DE TORNEIO (PÓDIO E DESEMPATE) ---
+function nextPage() {
+    const totalPages = Math.ceil(players.length / playersPerPage) || 1;
+    currentPage = (currentPage + 1) % totalPages;
+    renderLeaderboard();
+}
+
+function resetRotationTimer() {
+    clearInterval(rotationInterval);
+    // Timer changed to 60000 ms (1 minute) for testing purposes
+    rotationInterval = setInterval(nextPage, 60000);
+}
+
 function getTiedTopPlayers() {
     let tied = new Set();
-    
-    // Verifica apenas se os jogadores no Top 3 (ou empatados com eles) têm Pontos e Buchholz idênticos
     for (let i = 0; i < 3; i++) {
         if (players[i] && players[i+1]) {
             if (players[i].points === players[i+1].points && getBuchholz(players[i]) === getBuchholz(players[i+1])) {
@@ -65,11 +92,9 @@ function getTiedTopPlayers() {
 function checkPodiumStatus() {
     const podiumBtn = document.getElementById('podiumBtn');
     const tiebreakBtn = document.getElementById('tiebreakBtn');
-    
     const allResolved = activeMatches.length > 0 && activeMatches.every(m => m.resolved);
     
     if (currentRound >= 5 && allResolved) {
-        // Ordena os jogadores para ter a certeza da classificação atual
         players.sort((a, b) => {
             if (b.points !== a.points) return b.points - a.points;
             const bucA = getBuchholz(a);
@@ -79,13 +104,10 @@ function checkPodiumStatus() {
         });
 
         const tiedPlayers = getTiedTopPlayers();
-
         if (tiedPlayers.length > 0) {
-            // Existe um empate no topo, mostra o botão de desempate
             podiumBtn.style.display = 'none';
             tiebreakBtn.style.display = 'block';
         } else {
-            // Tudo limpo, mostra o pódio
             podiumBtn.style.display = 'block';
             tiebreakBtn.style.display = 'none';
         }
@@ -95,23 +117,15 @@ function checkPodiumStatus() {
     }
 }
 
-let tiebreakHistory = []; // Substitui o currentTiebreakPlayers para guardar o histórico completo
+let tiebreakHistory = [];
 
 function showTiebreak() {
     const tiedPlayers = getTiedTopPlayers();
-    
-    // Se for a primeira vez a abrir o desempate, inicializa a primeira partida relâmpago[cite: 4]
     if (tiebreakHistory.length === 0) {
         if (tiedPlayers.length < 2) return;
-        tiebreakHistory.push({
-            white: tiedPlayers[0],
-            black: tiedPlayers[1],
-            resolved: false
-        });
+        tiebreakHistory.push({ white: tiedPlayers[0], black: tiedPlayers[1], resolved: false });
     }
-
     renderTiebreakList();
-
     document.getElementById('mainLayout').style.display = 'none';
     document.getElementById('tiebreakView').style.display = 'flex';
 }
@@ -125,7 +139,6 @@ function renderTiebreakList() {
 
     tiebreakHistory.forEach((match, index) => {
         if (match.resolved) {
-            // Cartão de empate passado (Cinza)
             listContainer.innerHTML += `
                 <div class="pairing-card draw" style="box-shadow: none; border-color: var(--border); opacity: 0.6; padding: 15px;">
                     <div class="match-info" style="font-size: 1.2rem;">
@@ -139,7 +152,6 @@ function renderTiebreakList() {
                 </div>
             `;
         } else {
-            // Cartão da partida ativa (Destacado e Maior)
             listContainer.innerHTML += `
                 <div class="pairing-card" style="box-shadow: 0 4px 15px rgba(204, 51, 51, 0.3); border-color: var(--danger); padding: 20px;">
                     <div class="match-info" style="font-size: 1.4rem; margin-bottom: 15px;">
@@ -148,9 +160,9 @@ function renderTiebreakList() {
                         <div class="pairing-player right">${match.black.name} <span class="color-indicator color-black" style="width: 16px; height: 16px;"></span></div>
                     </div>
                     <div class="match-actions" style="gap: 12px; padding-top: 15px;">
-                        <button class="result-btn" style="padding: 12px; font-size: 1.1rem;" onclick="resolveTiebreak(${index}, '1-0')" title="Brancas Ganham">1-0</button>
-                        <button class="result-btn" style="padding: 12px; font-size: 1.1rem;" onclick="resolveTiebreak(${index}, '0.5-0.5')" title="Novo Empate">½-½</button>
-                        <button class="result-btn" style="padding: 12px; font-size: 1.1rem;" onclick="resolveTiebreak(${index}, '0-1')" title="Pretas Ganham">0-1</button>
+                        <button class="result-btn" style="padding: 12px; font-size: 1.1rem;" onclick="resolveTiebreak(${index}, '1-0')">1-0</button>
+                        <button class="result-btn" style="padding: 12px; font-size: 1.1rem;" onclick="resolveTiebreak(${index}, '0.5-0.5')">½-½</button>
+                        <button class="result-btn" style="padding: 12px; font-size: 1.1rem;" onclick="resolveTiebreak(${index}, '0-1')">0-1</button>
                     </div>
                 </div>
             `;
@@ -160,16 +172,13 @@ function renderTiebreakList() {
 
 function resolveTiebreak(matchIndex, result) {
     let match = tiebreakHistory[matchIndex];
-
     if (result === '0.5-0.5') {
         match.resolved = true;
         tiebreakHistory.push({ white: match.black, black: match.white, resolved: false });
         renderTiebreakList();
-        window.scrollTo(0, document.body.scrollHeight);
         return;
     }
 
-    // CORREÇÃO: Em vez de usar updateStat para dar 'points', damos uma 'tiebreakWin'
     if (result === '1-0') {
         match.white.tiebreakWins = (match.white.tiebreakWins || 0) + 1;
     } else if (result === '0-1') {
@@ -180,14 +189,12 @@ function resolveTiebreak(matchIndex, result) {
     document.getElementById('tiebreakView').style.display = 'none';
     document.getElementById('mainLayout').style.display = 'flex';
     
-    // Atualiza a tabela com a nova regra de desempate e mostra o pódio
     renderLeaderboard();
     checkPodiumStatus();
     saveData();
 }
 
 function showPodium() {
-    // Garante que a lista está ordenada corretamente antes de extrair o top 3
     players.sort((a, b) => {
         if (b.points !== a.points) return b.points - a.points;
         const bucA = getBuchholz(a);
@@ -196,12 +203,10 @@ function showPodium() {
         return b.games - a.games; 
     });
 
-    // Injeta os nomes nos lugares
     document.getElementById('podium-1-name').innerText = players[0] ? players[0].name : '-';
     document.getElementById('podium-2-name').innerText = players[1] ? players[1].name : '-';
     document.getElementById('podium-3-name').innerText = players[2] ? players[2].name : '-';
 
-    // Troca de ecrã
     document.getElementById('mainLayout').style.display = 'none';
     document.getElementById('podiumView').style.display = 'flex';
 }
@@ -211,15 +216,8 @@ function closePodium() {
     document.getElementById('podiumView').style.display = 'none';
 }
 
-
-// --- LÓGICA DO JOGO ---
 addForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    if (players.length >= 20) {
-        alert("O torneio está limitado a um máximo de 20 participantes.");
-        return;
-    }
-    
     const name = playerNameInput.value.trim();
     if (name) {
         players.push({
@@ -228,7 +226,8 @@ addForm.addEventListener('submit', (e) => {
             points: 0,
             games: 0,
             opponents: [], 
-            hasBye: false
+            hasBye: false,
+            roundHistory: [] 
         });
         playerNameInput.value = '';
         renderLeaderboard();
@@ -253,6 +252,13 @@ function deletePlayer(id) {
     const player = players.find(p => p.id === id);
     if (player && confirm(`Tens a certeza que queres remover "${player.name}" do torneio?`)) {
         players = players.filter(p => p.id !== id);
+        
+        // Reset the current page to 0 if deleting a player empties the current view
+        const totalPages = Math.ceil(players.length / playersPerPage) || 1;
+        if (currentPage >= totalPages) {
+            currentPage = totalPages - 1;
+        }
+        
         renderLeaderboard();
         saveData();
     }
@@ -277,51 +283,79 @@ function getBuchholz(player) {
 
 function renderLeaderboard() {
     players.sort((a, b) => {
-        // 1. Quem tem mais pontos fica à frente
         if (b.points !== a.points) return b.points - a.points;
-        
-        // 2. Se houver empate de pontos, usa o Buchholz
         const bucA = getBuchholz(a);
         const bucB = getBuchholz(b);
         if (bucB !== bucA) return bucB - bucA;
-        
-        // 3. NOVA REGRA: Se houver empate absoluto, usa as vitórias do Desempate (Blitz)
         const tbA = a.tiebreakWins || 0;
         const tbB = b.tiebreakWins || 0;
         if (tbB !== tbA) return tbB - tbA;
-        
-        // 4. Último recurso, número de jogos
         return b.games - a.games; 
     });
 
-    leaderboardBody.innerHTML = '';
+    const totalPages = Math.ceil(players.length / playersPerPage) || 1;
+    if (currentPage >= totalPages) currentPage = 0;
 
-    players.forEach((player, index) => {
+    const titleElement = document.querySelector('.right-column .header h1');
+    if (titleElement) {
+        titleElement.innerHTML = `🏆 Live Standings <span class="page-indicator">(Pág. ${currentPage + 1}/${totalPages})</span>`;
+    }
+
+    leaderboardBody.innerHTML = '';
+    const displayedPlayers = players.slice(currentPage * playersPerPage, (currentPage + 1) * playersPerPage);
+
+    displayedPlayers.forEach((player, index) => {
+        const absoluteRank = (currentPage * playersPerPage) + index + 1;
         const tr = document.createElement('tr');
-        const buchholzScore = getBuchholz(player);
         
+        let roundColsHtml = '';
+        for (let r = 1; r <= 5; r++) {
+            let cellText = '-';
+            let cellClass = '';
+            let historyVal = player.roundHistory ? player.roundHistory[r - 1] : undefined;
+
+            if (historyVal) {
+                if (historyVal === '1-') {
+                    cellText = '1';
+                    cellClass = 'res-win';
+                } else if (historyVal.startsWith('?')) {
+                    cellText = historyVal.replace('?', ''); 
+                    cellClass = 'res-pending';
+                } else {
+                    cellText = historyVal;
+                    if (historyVal.startsWith('1')) cellClass = 'res-win';
+                    else if (historyVal.startsWith('0')) cellClass = 'res-loss';
+                    else if (historyVal.startsWith('.5')) cellClass = 'res-draw';
+                }
+            }
+            roundColsHtml += `<td class="cell-center ${cellClass}">${cellText}</td>`;
+        }
+
+        // Calculate the Buchholz score for the current player
+        const buchholzScore = getBuchholz(player);
+
         tr.innerHTML = `
-            <td class="rank">${index + 1}</td>
-            <td style="font-weight: 500;">
-                ${player.name}
-            </td>
-            <td class="points">${player.points}</td>
-            <td style="color: var(--text-muted);">${buchholzScore}</td>
-            <td>${player.games}</td>
-            <td>
+            <td class="rank cell-center">${absoluteRank}</td>
+            <td style="font-weight: 500;">${player.name}</td>
+            ${roundColsHtml}
+            <td class="points cell-center">${player.points}</td>
+            <!-- Inject the BUC score here with a slightly muted color -->
+            <td class="cell-center" style="color: var(--text-muted); font-weight: bold;">${buchholzScore}</td>
+            
+            <td class="edit-col">
                 <div class="controls">
                     <button class="action-btn" onclick="updateStat(${player.id}, 'points', 1)">+1</button>
                     <button class="action-btn" onclick="updateStat(${player.id}, 'points', 0.5)">+½</button>
                     <button class="action-btn" onclick="updateStat(${player.id}, 'points', -0.5)">-½</button>
                 </div>
             </td>
-            <td>
+            <td class="edit-col">
                 <div class="controls">
                     <button class="action-btn" onclick="updateStat(${player.id}, 'games', 1)">+1</button>
                     <button class="action-btn" onclick="updateStat(${player.id}, 'games', -1)">-1</button>
                 </div>
             </td>
-            <td>
+            <td class="edit-col">
                 <div class="controls">
                     <button class="action-btn" onclick="editName(${player.id})" title="Editar Nome">✏️</button>
                     <button class="action-btn btn-danger" onclick="deletePlayer(${player.id})" title="Remover Jogador">🗑️</button>
@@ -336,13 +370,22 @@ function resolveMatch(matchId, result) {
     const match = activeMatches.find(m => m.id === matchId);
     if (!match || match.resolved) return;
 
+    let whitePlayer = players.find(p => p.id === match.white.id);
+    let blackPlayer = players.find(p => p.id === match.black.id);
+
     if (result === '1-0') {
         updateStat(match.white.id, 'points', 1); 
+        if (whitePlayer) whitePlayer.roundHistory[currentRound - 1] = '1b';
+        if (blackPlayer) blackPlayer.roundHistory[currentRound - 1] = '0p';
     } else if (result === '0-1') {
         updateStat(match.black.id, 'points', 1); 
+        if (whitePlayer) whitePlayer.roundHistory[currentRound - 1] = '0b';
+        if (blackPlayer) blackPlayer.roundHistory[currentRound - 1] = '1p';
     } else if (result === '0.5-0.5') {
         updateStat(match.white.id, 'points', 0.5); 
         updateStat(match.black.id, 'points', 0.5); 
+        if (whitePlayer) whitePlayer.roundHistory[currentRound - 1] = '.5b';
+        if (blackPlayer) blackPlayer.roundHistory[currentRound - 1] = '.5p';
     }
 
     updateStat(match.white.id, 'games', 1);
@@ -357,7 +400,6 @@ function resolveMatch(matchId, result) {
 
 function renderPairings() {
     pairingsList.innerHTML = '';
-    
     if (activeMatches.length === 0) {
         pairingsList.innerHTML = `<p style="text-align: center; color: var(--text-muted); margin-top: 20px;">Sem partidas ativas.</p>`;
         return;
@@ -400,16 +442,15 @@ function renderPairings() {
                     </div>
                     ${!match.resolved ? `
                     <div class="match-actions">
-                        <button class="result-btn" onclick="resolveMatch(${match.id}, '1-0')" title="Brancas Ganham">1-0</button>
-                        <button class="result-btn" onclick="resolveMatch(${match.id}, '0.5-0.5')" title="Empate">½-½</button>
-                        <button class="result-btn" onclick="resolveMatch(${match.id}, '0-1')" title="Pretas Ganham">0-1</button>
+                        <button class="result-btn" onclick="resolveMatch(${match.id}, '1-0')">1-0</button>
+                        <button class="result-btn" onclick="resolveMatch(${match.id}, '0.5-0.5')">½-½</button>
+                        <button class="result-btn" onclick="resolveMatch(${match.id}, '0-1')">0-1</button>
                     </div>
                     ` : `<div class="match-actions"><div class="status-text">${statusMessage}</div></div>`}
                 </div>
             `;
         }
     });
-    
     checkPodiumStatus();
 }
 
@@ -426,6 +467,10 @@ function generatePairings() {
     currentRound++;
     roundInfo.innerText = `Ronda: ${currentRound} / 5`;
     
+    players.forEach(p => {
+        if (!p.roundHistory) p.roundHistory = [];
+    });
+
     let pool = [...players];
     activeMatches = []; 
 
@@ -451,6 +496,7 @@ function generatePairings() {
             
             updateStat(realPlayer.id, 'points', 1);
             updateStat(realPlayer.id, 'games', 1);
+            realPlayer.roundHistory[currentRound - 1] = '1-';
 
             activeMatches.push({ id: Date.now() + Math.random(), white: realPlayer, black: null, isBye: true, resolved: true, resultCode: '1-0' });
         }
@@ -459,7 +505,6 @@ function generatePairings() {
     while (pool.length > 1) {
         let p1 = pool.shift();
         let p2Index = 0;
-        
         for (let i = 0; i < pool.length; i++) {
             if (!p1.opponents.includes(pool[i].id)) {
                 p2Index = i;
@@ -477,16 +522,40 @@ function generatePairings() {
         let matchId = Date.now() + Math.random();
 
         if (Math.random() > 0.5) {
+            realP1.roundHistory[currentRound - 1] = '?b';
+            realP2.roundHistory[currentRound - 1] = '?p';
             activeMatches.push({ id: matchId, white: realP1, black: realP2, isBye: false, resolved: false, resultCode: null });
         } else {
+            realP2.roundHistory[currentRound - 1] = '?b';
+            realP1.roundHistory[currentRound - 1] = '?p';
             activeMatches.push({ id: matchId, white: realP2, black: realP1, isBye: false, resolved: false, resultCode: null });
         }
     }
 
+    currentPage = 0; 
     renderPairings();
     renderLeaderboard();
     saveData();
 }
 
-// Inicializar a aplicação a tentar carregar os dados guardados
 window.onload = loadData;
+
+function toggleEditMode() {
+    document.body.classList.toggle('edit-mode-active');
+    const btn = document.getElementById('toggleEditBtn');
+    btn.innerText = document.body.classList.contains('edit-mode-active') ? 'Stop Edit' : 'Edit';
+    renderLeaderboard(); 
+}
+
+function toggleTheme() {
+    document.body.classList.toggle('light-mode');
+    const btn = document.getElementById('themeToggleBtn');
+    
+    if (document.body.classList.contains('light-mode')) {
+        btn.innerText = '🌙 Dark Mode';
+        localStorage.setItem('chessTournamentTheme', 'light');
+    } else {
+        btn.innerText = '☀️ Light Mode';
+        localStorage.setItem('chessTournamentTheme', 'dark');
+    }
+}
