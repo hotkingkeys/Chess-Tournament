@@ -17,9 +17,12 @@
             <!-- Cabeçalho com o título, botão e ronda na mesma linha -->
             <div class="header">
                 <h2 style="font-size: 1.2rem;">⚔️ Emparelhamentos</h2>
+                
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <span id="roundInfo" style="color: var(--text-muted); font-size: 0.85rem; font-weight: bold;">Ronda: 0 / 5</span>
                     <button id="generateRoundBtn" onclick="generatePairings()" style="padding: 5px 10px; font-size: 0.8rem;">Gerar Ronda</button>
+                    <!-- Movido para aqui, ao lado dos outros controlos -->
+                    <button id="pauseBtn" onclick="openPauseMenu()" class="icon-btn" title="Iniciar Pausa">🕒</button>
                 </div>
             </div>
 
@@ -120,6 +123,26 @@
             </div>
         </div>
         <button onclick="closePodium()" style="margin-top: 4rem; background-color: #403d39;">Voltar ao Dashboard</button>
+    </div>
+    
+    <div id="pauseMenu" class="pause-overlay" style="display: none;">
+        <div class="pause-content" style="background: var(--panel-bg); padding: 40px; border-radius: 12px; text-align: center;">
+            <h2 style="color: white; margin-bottom: 20px;">Duração da Pausa</h2>
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <button onclick="startPause(10)" style="padding: 15px 25px; font-size: 1.2rem;">10 min</button>
+                <button onclick="startPause(15)" style="padding: 15px 25px; font-size: 1.2rem;">15 min</button>
+                <button onclick="startPause(30)" style="padding: 15px 25px; font-size: 1.2rem;">30 min</button>
+            </div>
+            <button onclick="closeMenu()" style="background: #cc3333; margin-top: 20px;">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="pauseOverlay" class="pause-overlay" style="display: none;">
+        <div class="pause-content">
+            <h1 style="font-size: 3rem; margin-bottom: 0;">Intervalo</h1>
+            <div id="timerDisplay">00:00</div>
+            <button onclick="closePause()" style="background: white; color: black; padding: 10px 20px; font-size: 1.2rem; border-radius: 8px; border: none; cursor: pointer; font-weight: bold;">Terminar Pausa</button>
+        </div>
     </div>
 
     <script src="script.js"></script>

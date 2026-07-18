@@ -559,3 +559,65 @@ function toggleTheme() {
         localStorage.setItem('chessTournamentTheme', 'dark');
     }
 }
+
+let pauseInterval;
+let timeLeft = 1800; // 30 minutes in seconds
+
+function startPause() {
+    timeLeft = 1800; // Reset to 30 mins
+    document.getElementById('pauseOverlay').style.display = 'flex';
+    updateTimerDisplay();
+    
+    pauseInterval = setInterval(() => {
+        timeLeft--;
+        updateTimerDisplay();
+        
+        if (timeLeft <= 0) {
+            clearInterval(pauseInterval);
+            alert("A pausa terminou!");
+        }
+    }, 1000);
+}
+
+function updateTimerDisplay() {
+    const mins = Math.floor(timeLeft / 60);
+    const secs = timeLeft % 60;
+    document.getElementById('timerDisplay').innerText = 
+        `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
+function closePause() {
+    clearInterval(pauseInterval);
+    document.getElementById('pauseOverlay').style.display = 'none';
+}
+
+// Function to open the selection menu
+function openPauseMenu() {
+    document.getElementById('pauseMenu').style.display = 'flex';
+}
+
+function closeMenu() {
+    document.getElementById('pauseMenu').style.display = 'none';
+}
+
+// Updated startPause to accept minutes
+function startPause(minutes) {
+    document.getElementById('pauseMenu').style.display = 'none'; // Hide menu
+    
+    timeLeft = minutes * 60; // Convert to seconds
+    document.getElementById('pauseOverlay').style.display = 'flex'; // Show timer
+    updateTimerDisplay();
+    
+    // Clear any existing timer
+    clearInterval(pauseInterval);
+    
+    pauseInterval = setInterval(() => {
+        timeLeft--;
+        updateTimerDisplay();
+        
+        if (timeLeft <= 0) {
+            clearInterval(pauseInterval);
+            alert("A pausa terminou!");
+        }
+    }, 1000);
+}
